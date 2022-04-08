@@ -12,14 +12,6 @@ import (
 type EECert []*x509.Certificate
 type ByteEECert []byte
 
-// BFTEECert is specifically used during the BFT protocol,
-// since it allows to distinguish between a new addition
-// and an update
-type BFTEECert struct {
-	IsNew  bool
-	EECert ByteEECert
-}
-
 // LogEntry is returned by the GetEntries interface
 type LogEntry struct {
 	LeafValue []byte               `json:"value"`

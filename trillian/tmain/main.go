@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"context"
-	"crypto/sha256"
 	"crypto/x509"
 	"flag"
 	"fmt"
@@ -19,11 +18,8 @@ import (
 	"github.com/cyrill-k/fpki/trillian/tclient"
 
 	"github.com/golang/protobuf/ptypes"
-	ct "github.com/google/certificate-transparency-go"
 	"github.com/google/trillian"
 	"github.com/google/trillian/client/rpcflags"
-	"github.com/google/trillian/merkle"
-	"github.com/google/trillian/merkle/rfc6962"
 	"google.golang.org/grpc"
 )
 
@@ -365,36 +361,6 @@ func mappingFromCTLog() {
 	lastIdx, err = mper.PerformMappingFromCTLog(*ctLogAddress, *mapID, lastIdx, lastIdx+*mapElements, common.Min(100, *mapElements))
 	common.Log("lastIdx: %d, Domains(%d invalid, %d valid): %s", lastIdx, len(mper.InvalidDomains()), len(mper.ValidDomains()), *ctLogAddress)
 	common.LogError("Mapping failed: %s", err)
-}
-
-func getLogPoP() {
-	logClient := tclient.NewLogClient(*logAddress, *logPk, *maxReceiveMessageSize)
-	defer logClient.Close()
-
-	byteEECert, err := common.EECertFromPEM(*certFile)
-	common.LogError("Failed to read EECert from file: %s", err)
-	domain, err := common.DomainFromByteEECert(byteEECert)
-
-	pop, root, err := logClient.GetPoP(*logID, domain)
-	common.LogError("Failed to get PoP: %s", err)
-
-	hash := sha256.Sum256(append([]byte{ct.TreeLeafPrefix}, []byte(fmt.Sprintf("(add, %s)", domain))...))
-
-	checkPoP(pop, root.TreeSize, root.RootHash, hash[:])
-}
-
-func checkPoP(pop *trillian.Proof, treeSize uint64, rootHash, hash []byte) {
-	log.Printf("Checking PoP for index %d in tree of size %d:\n", pop.LeafIndex, treeSize)
-
-	for idx, node := range pop.Hashes {
-		log.Printf("Node %d: %v\n", idx, node)
-	}
-
-	verifier := merkle.NewLogVerifier(rfc6962.DefaultHasher)
-	err := verifier.VerifyInclusionProof(pop.LeafIndex, int64(treeSize), pop.Hashes, rootHash, hash)
-	common.LogError("Failed to verify inclusion proof: %s", err)
-
-	log.Println("PoP verification succeeded")
 }
 
 func checkMapID() {
