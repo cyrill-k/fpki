@@ -8,7 +8,7 @@ set -e
 DIR="$( cd "$( dirname "$0" )" && pwd )"
 TARGET_DIR=$(readlink -f $1)
 
-HOST_NAME=ch.ethz.netsec.trustflex.perflogger
+HOST_NAME=ch.ethz.netsec.fpki.perflogger
 
 # Create directory to store native messaging host.
 mkdir -p "$TARGET_DIR"

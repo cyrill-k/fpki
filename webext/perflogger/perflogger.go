@@ -10,7 +10,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/cyrill-k/trustflex/common"
+	"github.com/cyrill-k/fpki/common"
 )
 
 // MsgRes is a NativeMessage Response
@@ -86,7 +86,7 @@ func main() {
 		// continue
 	}
 
-	f, err := common.OpenOrCreate("/home/cyrill/go/src/github.com/cyrill-k/trustflex/tls/e2e.csv")
+	f, err := common.OpenOrCreate("/home/cyrill/go/src/github.com/cyrill-k/fpki/tls/e2e.csv")
 	common.LogError("Can't open perf log file: %s", err)
 	w := bufio.NewWriter(f)
 	csvWriter := csv.NewWriter(w)

@@ -14,9 +14,9 @@ import (
 	"path"
 	"time"
 
-	"github.com/cyrill-k/trustflex/common"
-	"github.com/cyrill-k/trustflex/trillian/mapper"
-	"github.com/cyrill-k/trustflex/trillian/tclient"
+	"github.com/cyrill-k/fpki/common"
+	"github.com/cyrill-k/fpki/trillian/mapper"
+	"github.com/cyrill-k/fpki/trillian/tclient"
 
 	"github.com/golang/protobuf/ptypes"
 	ct "github.com/google/certificate-transparency-go"

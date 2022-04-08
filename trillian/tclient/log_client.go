@@ -13,7 +13,7 @@ import (
 	"io/ioutil"
 	"log"
 
-	"github.com/cyrill-k/trustflex/common"
+	"github.com/cyrill-k/fpki/common"
 	ct "github.com/google/certificate-transparency-go"
 	"github.com/google/trillian"
 	tcrypto "github.com/google/trillian/crypto"

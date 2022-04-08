@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/cyrill-k/trustflex/common"
-	"github.com/cyrill-k/trustflex/trillian/tclient"
+	"github.com/cyrill-k/fpki/common"
+	"github.com/cyrill-k/fpki/trillian/tclient"
 )
 
 type ProofDebugInfo struct {
@@ -15,16 +15,16 @@ type ProofDebugInfo struct {
 	NWildcardCertificates []int64
 }
 
-func VerifyTrustflex(domain string, proofBytes []byte, certificate []x509.Certificate, mapID int64, mapPK string, trustedCAs [][]byte, compressed bool) error {
+func VerifyFpki(domain string, proofBytes []byte, certificate []x509.Certificate, mapID int64, mapPK string, trustedCAs [][]byte, compressed bool) error {
 	policy, _, err := GetVerifiedPolicy(domain, proofBytes, mapID, mapPK, trustedCAs, compressed)
 	if err != nil {
 		return err
 	}
-	return VerifyTrustflexPolicy(policy, certificate)
+	return VerifyFpkiPolicy(policy, certificate)
 }
 
 // verify the TLS certificate given the resolved and verified policy
-func VerifyTrustflexPolicy(policy map[string]interface{}, certificate []x509.Certificate) error {
+func VerifyFpkiPolicy(policy map[string]interface{}, certificate []x509.Certificate) error {
 	// HTTP downgrade prevention
 	common.Debug("Checking for HTTP downgrade attack...")
 	if len(certificate) == 0 && !policy["_ALLOW_HTTP"].(bool) {

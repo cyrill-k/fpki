@@ -12,7 +12,7 @@ export GOPATH=/home/cyrill/go
   ```
 - Build native applications for web extension:
   ```shell
-  cd <trustflex repo>
+  cd <fpki repo>
   make build_webextensions
   ```
 
@@ -20,7 +20,7 @@ export GOPATH=/home/cyrill/go
 Scrape the alexa top 1k domains for their TLS certificate:
 
 ```shell
-cd <trustflex repo>/tls
+cd <fpki repo>/tls
 curl -s http://s3.amazonaws.com/alexa-static/top-1m.csv.zip | funzip | head -n 1000 >top-1k.domains
 cp top-1k.domains top-1k-filtered.domains
 # manually remove invalid/problematic domains in top-1k-filtered.domains
@@ -44,16 +44,16 @@ Fetch alexa top 1k websites with and without (local) dns caching.
   ```
 - Generate required experiment files
   ```shell
-  cd <trustflex repo>/tls
+  cd <fpki repo>/tls
   ./generate.py experiment-input-dns >experiment-domains
   ```
 - Clone coredns repo:
   ```shell
-  git clone --single-branch --branch trustflex-plugin --depth=1 git@github.com:cyrill-k/coredns
+  git clone --single-branch --branch fpki-plugin --depth=1 git@github.com:cyrill-k/coredns
   ```
 - Build coredns repo (for go1.16, there is a bug which results in a build error [stackoverflow](https://stackoverflow.com/questions/66469396/go-module-is-found-and-replaced-but-not-required) which can be solved by running `go mod tidy` in the coredns repo before `make build_coredns`):
   ```shell
-  cd <trustflex repo>
+  cd <fpki repo>
   make pre_build_coredns
   make build_coredns
   ```
@@ -98,16 +98,16 @@ Simulate TLS stapling by adding proofs in the form of X509 extensions.
   ```shell
   ./create_self_signed_certs_with_stapling_extension.py --action generate-initial-certs certchains/*
   ```
-- In a second terminal, in the trustflex-docker folder, start containers:
+- In a second terminal, in the fpki-docker folder, start containers:
   ```shell
-  cd <trustflex-docker repository>
+  cd <fpki-docker repository>
   docker-compose up
   ```
 - Create log MHT:
   ```shell
   docker exec experiment make createtree
   ```
-- Add certificates to trustflex log server:
+- Add certificates to fpki log server:
   ```shell
   for x in output/servercerts/*; do cat "$x" | docker exec -i experiment make log_add; done
   ```
@@ -134,9 +134,9 @@ Simulate TLS stapling by adding proofs in the form of X509 extensions.
   sudo apt install -y nginx
   mkdir www
   echo "<html><body><a href="www.ethz.ch">ethz</a></body></html>" >www/index.html
-  ./generate.py nginx-config >nginx-trustflex-config
-  sudo cp nginx-trustflex-config /etc/nginx/sites-available/trustflex
-  sudo ln -s /etc/nginx/sites-available/trustflex /etc/nginx/sites-enabled/trustflex
+  ./generate.py nginx-config >nginx-fpki-config
+  sudo cp nginx-fpki-config /etc/nginx/sites-available/fpki
+  sudo ln -s /etc/nginx/sites-available/fpki /etc/nginx/sites-enabled/fpki
   ./generate.py hosts-file >hosts_file
   cat hosts_file | sudo tee -a /etc/hosts
   sudo systemctl restart nginx
@@ -146,7 +146,7 @@ Simulate TLS stapling by adding proofs in the form of X509 extensions.
   ./generate_experiment_input.py >experiment-domains
   ```
 - Locate firefox profile folder (Help -> More Troubleshoot Information -> Profile Directory)
-- Add [root cert](./output/rootcerts/cert-trustflex.pem) to Firefox trusted CA store. (Preferences -> Privacy & Security -> View Certificates... -> Import)
+- Add [root cert](./output/rootcerts/cert-fpki.pem) to Firefox trusted CA store. (Preferences -> Privacy & Security -> View Certificates... -> Import)
 - Run experiment:
   ```shell
   for x in {1..2002}; do web-ext run -p path/to/firefox/profile -f /usr/bin/firefox --keep-profile-changes; done

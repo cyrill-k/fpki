@@ -1,7 +1,7 @@
-module github.com/cyrill-k/trustflex/ca
+module github.com/cyrill-k/fpki/ca
 
 go 1.13
 
-replace github.com/cyrill-k/trustflex => /home/cyrill/go/src/github.com/cyrill-k/trustflex
+replace github.com/cyrill-k/fpki => /home/cyrill/go/src/github.com/cyrill-k/fpki
 
-require github.com/cyrill-k/trustflex v0.0.0-00010101000000-000000000000
+require github.com/cyrill-k/fpki v0.0.0-00010101000000-000000000000

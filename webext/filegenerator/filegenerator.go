@@ -6,7 +6,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
-	"github.com/cyrill-k/trustflex/common"
+	"github.com/cyrill-k/fpki/common"
 	"io"
 	"io/ioutil"
 	"log"
@@ -60,7 +60,7 @@ func (m *MsgRes) Write(b io.Writer, order binary.ByteOrder) error {
 func readExperimentIdx() int64 {
 	var lastIdx int64
 	lastIdx = 0
-	file, err := os.Open("/home/cyrill/go/src/github.com/cyrill-k/trustflex/tls/experimentIdx")
+	file, err := os.Open("/home/cyrill/go/src/github.com/cyrill-k/fpki/tls/experimentIdx")
 	if err == nil {
 		// common.LogError("Failed to open lastIdx file: %s", err)
 		defer file.Close()
@@ -72,7 +72,7 @@ func readExperimentIdx() int64 {
 }
 
 func writeExperimentIdx(lastIdx int64) {
-	file, err := os.Create("/home/cyrill/go/src/github.com/cyrill-k/trustflex/tls/experimentIdx")
+	file, err := os.Create("/home/cyrill/go/src/github.com/cyrill-k/fpki/tls/experimentIdx")
 	common.LogError("Failed to create lastIdx file: %s", err)
 	defer file.Close()
 
@@ -102,7 +102,7 @@ func main() {
 		// continue
 	}
 
-	f, err := os.Open("/home/cyrill/go/src/github.com/cyrill-k/trustflex/tls/experiment-domains")
+	f, err := os.Open("/home/cyrill/go/src/github.com/cyrill-k/fpki/tls/experiment-domains")
 	common.LogError("Can't open perf log file: %s", err)
 	allDomains, err := ioutil.ReadAll(f)
 	common.LogError("Can't read domains from file: %s", err)

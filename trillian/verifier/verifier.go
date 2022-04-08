@@ -19,8 +19,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cyrill-k/trustflex/common"
-	"github.com/cyrill-k/trustflex/dns/util"
+	"github.com/cyrill-k/fpki/common"
+	"github.com/cyrill-k/fpki/dns/util"
 )
 
 // MsgRes is a NativeMessage Response

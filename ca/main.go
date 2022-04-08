@@ -13,7 +13,7 @@ import (
 	"encoding/pem"
 	"flag"
 	"fmt"
-	"github.com/cyrill-k/trustflex/common"
+	"github.com/cyrill-k/fpki/common"
 	"log"
 	"math/big"
 	"net"

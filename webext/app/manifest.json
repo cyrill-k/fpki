@@ -20,7 +20,7 @@
 
     "browser_specific_settings": {
         "gecko": {
-            "id": "trustflex@netsec.ethz.ch",
+            "id": "fpki@netsec.ethz.ch",
             "strict_min_version": "50.0"
         }
     },

@@ -20,7 +20,7 @@ Navigate to the TLS folder and execute:
 This will generate the `tls/certchains` folder needed by the system. Make sure the generated files in this folder are non-empty. 
 
 ## Starting up the whole backend system
-Follow the instructions found in the README at https://github.com/cyrill-k/trustflex-docker/.
+Follow the instructions found in the README at https://github.com/cyrill-k/fpki-docker/.
 
 ## Webextension
 
@@ -29,25 +29,25 @@ Go get usually installs stuff into the first path found in $GOPATH. If this is n
 
 ### Changing the hardcoded filepaths
 
-In the webextension, the path to the trustflex repo are hardcoded. You can change them by executing the following sed command from the **webext** folder after substituting the correct local path to the root of this repo:
+In the webextension, the path to the fpki repo are hardcoded. You can change them by executing the following sed command from the **webext** folder after substituting the correct local path to the root of this repo:
 ```
-find . -type f -readable -writable -exec sed -i 's:/home/cyrill/go/src/github.com/cyrill-k/trustflex/:/your/path/to/trustflex/:' {} +
+find . -type f -readable -writable -exec sed -i 's:/home/cyrill/go/src/github.com/cyrill-k/fpki/:/your/path/to/fpki/:' {} +
 ```
-After this step there are still two paths that need adjusting in the file *app/background.js*. When we use the docker repo to start the background services, the files *mapid1* and *mappk1.pem* are found in the config folder of the trustflex-docker repo (instead of the path ending in *trustflex/resolver*). Change the paths accordingly. 
+After this step there are still two paths that need adjusting in the file *app/background.js*. When we use the docker repo to start the background services, the files *mapid1* and *mappk1.pem* are found in the config folder of the fpki-docker repo (instead of the path ending in *fpki/resolver*). Change the paths accordingly. 
 
 ### Building the webextension
 
 In the root folder execute:
 ```
-make trustflex=`pwd` build_webextensions
+make fpki=`pwd` build_webextensions
 ``` 
 If the following messages appear on your terminal, the building of the extension has succeeded:
 ```
-Native messaging host ch.ethz.netsec.trustflex.verifier has been installed.
-Native messaging host ch.ethz.netsec.trustflex.txtfetcher has been installed.
-Native messaging host ch.ethz.netsec.trustflex.perflogger has been installed.
-Native messaging host ch.ethz.netsec.trustflex.filegenerator has been installed.
-Native messaging host ch.ethz.netsec.trustflex.policyfetcher has been installed.
+Native messaging host ch.ethz.netsec.fpki.verifier has been installed.
+Native messaging host ch.ethz.netsec.fpki.txtfetcher has been installed.
+Native messaging host ch.ethz.netsec.fpki.perflogger has been installed.
+Native messaging host ch.ethz.netsec.fpki.filegenerator has been installed.
+Native messaging host ch.ethz.netsec.fpki.policyfetcher has been installed.
 ```
 
 ### Load the Webextension with Firefox

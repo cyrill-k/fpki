@@ -1,4 +1,4 @@
-module github.com/cyrill-k/trustflex
+module github.com/cyrill-k/fpki
 
 go 1.13
 

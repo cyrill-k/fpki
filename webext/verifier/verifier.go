@@ -8,8 +8,8 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/cyrill-k/trustflex/common"
-	"github.com/cyrill-k/trustflex/dns/util"
+	"github.com/cyrill-k/fpki/common"
+	"github.com/cyrill-k/fpki/dns/util"
 	"io"
 	"io/ioutil"
 	"os"
@@ -124,7 +124,7 @@ func main() {
 	}
 	// fmt.Fprint(os.Stderr, "mapID = ", mapID, "\n")
 	// fmt.Fprint(os.Stderr, "mapPK = ", req.MapPK, "\n")
-	err = util.VerifyTrustflex(req.Domain, req.Proof, certificate, int64(mapID), req.MapPK, trustedCAs, req.Compressed)
+	err = util.VerifyFpki(req.Domain, req.Proof, certificate, int64(mapID), req.MapPK, trustedCAs, req.Compressed)
 	if err != nil {
 		fmt.Fprint(os.Stderr, "Error verifying certificate: ", err, "\n")
 	}

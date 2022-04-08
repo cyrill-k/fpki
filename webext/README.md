@@ -1,7 +1,7 @@
 # TLS Stapling experiment
 
 ## Setup
-Install the self-signed root certificate in firefox: Preferences -> Privacy & Security -> View Certificates -> Import `cert-trustflex.pem`
+Install the self-signed root certificate in firefox: Preferences -> Privacy & Security -> View Certificates -> Import `cert-fpki.pem`
 
 ## Start Experiment
 ```shell

@@ -7,7 +7,7 @@ import (
 	"crypto"
 	"encoding/asn1"
 	"fmt"
-	"github.com/cyrill-k/trustflex/common"
+	"github.com/cyrill-k/fpki/common"
 	"github.com/google/trillian"
 	tcrypto "github.com/google/trillian/crypto"
 	"github.com/google/trillian/merkle"

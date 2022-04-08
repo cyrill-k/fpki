@@ -1,9 +1,9 @@
 {
-  "name": "ch.ethz.netsec.trustflex.verifier",
+  "name": "ch.ethz.netsec.fpki.verifier",
   "description": "Native Messaging host component for EEPKI",
-  "path": "/home/cyrill/go/src/github.com/cyrill-k/trustflex/webext/verifier/verifier",
+  "path": "/home/cyrill/go/src/github.com/cyrill-k/fpki/webext/verifier/verifier",
   "type": "stdio",
   "allowed_extensions": [
-      "trustflex@netsec.ethz.ch"
+      "fpki@netsec.ethz.ch"
   ]
 }

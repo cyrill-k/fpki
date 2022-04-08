@@ -8,7 +8,7 @@ import (
 	"encoding"
 	"encoding/asn1"
 	"fmt"
-	"github.com/cyrill-k/trustflex/common"
+	"github.com/cyrill-k/fpki/common"
 	"math/big"
 )
 

@@ -48,8 +48,8 @@ def parse_arguments():
         description="Transform a web PKI cert with a complete chain. Replaces chain with chain rooted in own root certificate and staples F-PKI proofs as non-critical extension",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    parser.add_argument("--root-cert", help="root certificate in pem format", default=join(DEFAULT_OUTPUT_FOLDER, ROOTCERT_FOLDER, "cert-trustflex.pem"))
-    parser.add_argument("--root-key", help="private key of root certificate in pem format", default=join(DEFAULT_OUTPUT_FOLDER, ROOTKEY_FOLDER, "key-trustflex.pem"))
+    parser.add_argument("--root-cert", help="root certificate in pem format", default=join(DEFAULT_OUTPUT_FOLDER, ROOTCERT_FOLDER, "cert-fpki.pem"))
+    parser.add_argument("--root-key", help="private key of root certificate in pem format", default=join(DEFAULT_OUTPUT_FOLDER, ROOTKEY_FOLDER, "key-fpki.pem"))
     parser.add_argument('certificates', metavar='C', nargs='*', help="Certificate chains to transform in pem format")
     parser.add_argument("--output-dir", help="directory to store generated keys and certificates", default="output")
     parser.add_argument("--certificate-trust-store", type=str, default="/etc/ssl/certs/ca-certificates.crt", help="File containing all trusted root certificates")
@@ -141,24 +141,24 @@ def get_common_name(name: x509.Name) -> Optional[str]:
     return None
 
 
-def get_trustflex_name(name: x509.Name) -> x509.Name:
+def get_fpki_name(name: x509.Name) -> x509.Name:
     rdns_entries = []
     for attribute in name:
         if attribute.oid == NameOID.COMMON_NAME:
-            rdns_entries.append(x509.NameAttribute(NameOID.COMMON_NAME, u'trustflex-'+attribute.value))
+            rdns_entries.append(x509.NameAttribute(NameOID.COMMON_NAME, u'fpki-'+attribute.value))
         else:
             rdns_entries.append(attribute)
     return x509.Name(rdns_entries)
 
 
-def create_trustflex_root_cert_and_key(key_type="secp256"):
+def create_fpki_root_cert_and_key(key_type="secp256"):
     key = create_key(key_type)
     ski = x509.SubjectKeyIdentifier.from_public_key(key.public_key())
     serial_number = x509.random_serial_number()
     name = x509.Name([
-        x509.NameAttribute(NameOID.COMMON_NAME, u'trustflex CA'),
-        x509.NameAttribute(NameOID.ORGANIZATION_NAME, u'trustflex ORG'),
-        x509.NameAttribute(NameOID.ORGANIZATIONAL_UNIT_NAME, u'trustflex ORG UNIT'),
+        x509.NameAttribute(NameOID.COMMON_NAME, u'fpki CA'),
+        x509.NameAttribute(NameOID.ORGANIZATION_NAME, u'fpki ORG'),
+        x509.NameAttribute(NameOID.ORGANIZATIONAL_UNIT_NAME, u'fpki ORG UNIT'),
     ])
 
     builder = x509.CertificateBuilder()
@@ -181,24 +181,24 @@ def create_trustflex_root_cert_and_key(key_type="secp256"):
         return builder.sign(key, None), key
 
 
-def modify_key_in_cert(cert: x509.Certificate, key, signing_key, random_serial: bool = False, issuer_name: x509.Name = None, transform_issuer_to_trustflex_names: bool = False, transform_subject_to_trustflex_names: bool = False, proof_byte_extension: bytes = None, adjust_subject_and_san: Optional[str] = None, parent_cert: Optional[x509.Certificate] = None, second_tld_map: Mapping[str, str] = None):
+def modify_key_in_cert(cert: x509.Certificate, key, signing_key, random_serial: bool = False, issuer_name: x509.Name = None, transform_issuer_to_fpki_names: bool = False, transform_subject_to_fpki_names: bool = False, proof_byte_extension: bytes = None, adjust_subject_and_san: Optional[str] = None, parent_cert: Optional[x509.Certificate] = None, second_tld_map: Mapping[str, str] = None):
     ski = x509.SubjectKeyIdentifier.from_public_key(key.public_key())
     aki = x509.AuthorityKeyIdentifier.from_issuer_public_key(signing_key.public_key())
     ext_replacement = {ski.oid: (ski, False), aki.oid: (aki, False)}
 
     builder = x509.CertificateBuilder()
-    if transform_issuer_to_trustflex_names:
+    if transform_issuer_to_fpki_names:
         if issuer_name is None:
-            builder = builder.issuer_name(get_trustflex_name(cert.issuer))
+            builder = builder.issuer_name(get_fpki_name(cert.issuer))
         else:
-            builder = builder.issuer_name(get_trustflex_name(issuer_name))
+            builder = builder.issuer_name(get_fpki_name(issuer_name))
     else:
         if issuer_name is None:
             builder = builder.issuer_name(cert.issuer)
         else:
             builder = builder.issuer_name(issuer_name)
-    if transform_subject_to_trustflex_names:
-        name = get_trustflex_name(cert.subject)
+    if transform_subject_to_fpki_names:
+        name = get_fpki_name(cert.subject)
     elif adjust_subject_and_san is not None:
         name = adjust_name(cert.subject, adjust_subject_and_san)
     elif second_tld_map is not None:
@@ -211,8 +211,8 @@ def modify_key_in_cert(cert: x509.Certificate, key, signing_key, random_serial: 
         name = cert.subject
         # name = x509.Name([
         #     x509.NameAttribute(NameOID.COMMON_NAME, u'000000.cyrill.com'),
-        #     x509.NameAttribute(NameOID.ORGANIZATION_NAME, u'SC trustflex ORG'),
-        #     x509.NameAttribute(NameOID.ORGANIZATIONAL_UNIT_NAME, u'SC trustflex ORG UNIT'),
+        #     x509.NameAttribute(NameOID.ORGANIZATION_NAME, u'SC fpki ORG'),
+        #     x509.NameAttribute(NameOID.ORGANIZATIONAL_UNIT_NAME, u'SC fpki ORG UNIT'),
         # ])
     builder = builder.subject_name(name)
         # builder = builder.subject_name(cert.subject)
@@ -259,7 +259,7 @@ def modify_key_in_cert(cert: x509.Certificate, key, signing_key, random_serial: 
         return builder.sign(signing_key, None)
 
 
-def create_new_cert_for_cert(cert: x509.Certificate, key_folder: Optional[str], cert_folder: Optional[str], key_base_file_name: str, cert_base_file_name: str, signing_key: PrivateKey = None, intermediate_certs: Certificates = [], random_serial: bool = False, issuer_name: x509.Name = None, transform_subject_to_trustflex_names: bool = False, transform_issuer_to_trustflex_names: bool = False, proof_byte_extension: bytes = None, key: Optional[PrivateKey] = None, adjust_subject_and_san: Optional[str] = None, parent_cert: Optional[x509.Certificate] = None, second_tld_map: Mapping[str, str] = None) -> CertificateKeyTuple:
+def create_new_cert_for_cert(cert: x509.Certificate, key_folder: Optional[str], cert_folder: Optional[str], key_base_file_name: str, cert_base_file_name: str, signing_key: PrivateKey = None, intermediate_certs: Certificates = [], random_serial: bool = False, issuer_name: x509.Name = None, transform_subject_to_fpki_names: bool = False, transform_issuer_to_fpki_names: bool = False, proof_byte_extension: bytes = None, key: Optional[PrivateKey] = None, adjust_subject_and_san: Optional[str] = None, parent_cert: Optional[x509.Certificate] = None, second_tld_map: Mapping[str, str] = None) -> CertificateKeyTuple:
     if key is None:
         key = create_key_for_cert(cert)
     if key_folder is not None:
@@ -267,7 +267,7 @@ def create_new_cert_for_cert(cert: x509.Certificate, key_folder: Optional[str], 
 
     if signing_key is None:
         signing_key = key
-    mod_cert = modify_key_in_cert(cert, key, signing_key, random_serial=random_serial, issuer_name=issuer_name, transform_subject_to_trustflex_names=transform_subject_to_trustflex_names, transform_issuer_to_trustflex_names=transform_issuer_to_trustflex_names, proof_byte_extension=proof_byte_extension, adjust_subject_and_san=adjust_subject_and_san, parent_cert=parent_cert, second_tld_map=second_tld_map)
+    mod_cert = modify_key_in_cert(cert, key, signing_key, random_serial=random_serial, issuer_name=issuer_name, transform_subject_to_fpki_names=transform_subject_to_fpki_names, transform_issuer_to_fpki_names=transform_issuer_to_fpki_names, proof_byte_extension=proof_byte_extension, adjust_subject_and_san=adjust_subject_and_san, parent_cert=parent_cert, second_tld_map=second_tld_map)
     certs = [mod_cert]
     if intermediate_certs is not None:
         for int_cert in intermediate_certs:
@@ -307,11 +307,11 @@ def read_server_certs_and_keys(servercert_folder: str, serverkey_folder: str, in
 
 def generate_issuer_name_mapping(cert_trust_store_file: str, single_root_cert: x509.Certificate = None):
     certs = read_certs(cert_trust_store_file)
-    # get_trustflex_name(certs[0].subject)
+    # get_fpki_name(certs[0].subject)
     if single_root_cert is not None:
         return {c.subject: single_root_cert.subject for c in certs}
     else:
-        return {c.subject: get_trustflex_name(c.subject) for c in certs}
+        return {c.subject: get_fpki_name(c.subject) for c in certs}
 
 
 # /etc/ssl/certs/ca-certificates.crt
@@ -324,7 +324,7 @@ def create_self_signed_root_certs(cert_trust_store_file: str, rootcert_folder: s
             print(f"Ignoring {cert} with non-positive serial: {cert.serial_number}", file=sys.stderr)
             negative_serials += 1
             continue
-        mod_cert = create_new_cert_for_cert(cert, rootkey_folder, rootcert_folder, f"{i}", f"{i}", random_serial=True, transform_subject_to_trustflex_names=True, transform_issuer_to_trustflex_names=True)[0]
+        mod_cert = create_new_cert_for_cert(cert, rootkey_folder, rootcert_folder, f"{i}", f"{i}", random_serial=True, transform_subject_to_fpki_names=True, transform_issuer_to_fpki_names=True)[0]
         issuer_root_cert_map[mod_cert.issuer] = mod_cert
     print(f"negative serials: {negative_serials}", file=sys.stderr)
     return issuer_root_cert_map
@@ -385,13 +385,13 @@ def create_endpoint_cert_chain(certs: Sequence[x509.Certificate], root_cert: x50
             key_folder = serverkey_folder
             cert_folder = servercert_folder
             basename = rank
-            # transform_subject_to_trustflex_names = False
+            # transform_subject_to_fpki_names = False
             proof_byte_extension = proof_bytes
         else:
             key_folder = intkey_folder
             cert_folder = None
             basename = f"{rank}-{i-1}"
-            # transform_subject_to_trustflex_names = True
+            # transform_subject_to_fpki_names = True
             proof_byte_extension = None
         cur_parent_cert = parent_cert_chain[0] if len(parent_cert_chain) > 0 else root_cert
         issuer_name = cur_parent_cert.subject
@@ -404,9 +404,9 @@ def create_endpoint_cert_chain(certs: Sequence[x509.Certificate], root_cert: x50
             # always use random serial
             random_serial = True
         if enable_adjust_subject_and_san:
-            mod_cert, mod_key = create_new_cert_for_cert(cert, key_folder, cert_folder, basename, basename, signing_key=signing_key, intermediate_certs=parent_cert_chain, issuer_name=issuer_name, transform_subject_to_trustflex_names=False, proof_byte_extension=proof_byte_extension, random_serial=random_serial, adjust_subject_and_san=f"d{basename}.com", parent_cert=cur_parent_cert)
+            mod_cert, mod_key = create_new_cert_for_cert(cert, key_folder, cert_folder, basename, basename, signing_key=signing_key, intermediate_certs=parent_cert_chain, issuer_name=issuer_name, transform_subject_to_fpki_names=False, proof_byte_extension=proof_byte_extension, random_serial=random_serial, adjust_subject_and_san=f"d{basename}.com", parent_cert=cur_parent_cert)
         else:
-            mod_cert, mod_key = create_new_cert_for_cert(cert, key_folder, cert_folder, basename, basename, signing_key=signing_key, intermediate_certs=parent_cert_chain, issuer_name=issuer_name, transform_subject_to_trustflex_names=False, proof_byte_extension=proof_byte_extension, random_serial=random_serial, second_tld_map=second_tld_map, parent_cert=cur_parent_cert)
+            mod_cert, mod_key = create_new_cert_for_cert(cert, key_folder, cert_folder, basename, basename, signing_key=signing_key, intermediate_certs=parent_cert_chain, issuer_name=issuer_name, transform_subject_to_fpki_names=False, proof_byte_extension=proof_byte_extension, random_serial=random_serial, second_tld_map=second_tld_map, parent_cert=cur_parent_cert)
         parent_key = mod_key
         parent_cert_chain = [mod_cert] + parent_cert_chain
         mod_certs.append(mod_cert)
@@ -472,7 +472,7 @@ def main():
 
     if args.action == "generate-initial-certs":
         if not args.multiple_root_certs:
-            root_cert, root_key = create_trustflex_root_cert_and_key()
+            root_cert, root_key = create_fpki_root_cert_and_key()
             save_key(root_key, args.root_key)
             save_cert(root_cert, args.root_cert)
 

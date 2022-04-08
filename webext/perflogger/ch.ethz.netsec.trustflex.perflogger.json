@@ -1,9 +1,9 @@
 {
-  "name": "ch.ethz.netsec.trustflex.perflogger",
+  "name": "ch.ethz.netsec.fpki.perflogger",
   "description": "Native Messaging host component for EEPKI",
-  "path": "/home/cyrill/go/src/github.com/cyrill-k/trustflex/webext/perflogger/perflogger",
+  "path": "/home/cyrill/go/src/github.com/cyrill-k/fpki/webext/perflogger/perflogger",
   "type": "stdio",
   "allowed_extensions": [
-      "trustflex@netsec.ethz.ch"
+      "fpki@netsec.ethz.ch"
   ]
 }

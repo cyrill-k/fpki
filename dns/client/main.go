@@ -6,9 +6,9 @@ import (
 	"encoding/csv"
 	"flag"
 	"fmt"
-	"github.com/cyrill-k/trustflex/common"
-	"github.com/cyrill-k/trustflex/dns/util"
-	"github.com/cyrill-k/trustflex/trillian/tclient"
+	"github.com/cyrill-k/fpki/common"
+	"github.com/cyrill-k/fpki/dns/util"
+	"github.com/cyrill-k/fpki/trillian/tclient"
 	"io"
 	"log"
 	"os"
@@ -22,7 +22,7 @@ var (
 	mapResolverDomain  = flag.String("map_res_domain", "mapserver1.com", "DNS domain name of map server")
 
 	mapID = flag.Int64("map_id", 0, "ID of the Trillian Map")
-	mapPk = flag.String("map_pk", "data/os-trustflex-dnsresolver/mappk1.pem", "File holding Map Public Key")
+	mapPk = flag.String("map_pk", "data/os-fpki-dnsresolver/mappk1.pem", "File holding Map Public Key")
 
 	domain = flag.String("domain", "example.com", "Domain that should be queried")
 
@@ -95,7 +95,7 @@ func verifyAll() {
 			}
 			start = time.Now()
 			// log.Printf("%+v", *mapID)
-			err = util.VerifyTrustflex(record[1], proofBytes, certs[0], *mapID, *mapPk, nil, true)
+			err = util.VerifyFpki(record[1], proofBytes, certs[0], *mapID, *mapPk, nil, true)
 			if err != nil {
 				common.Log("Verification failed: %s", err)
 				csvMsg += ".verify-fail"
@@ -119,8 +119,8 @@ func main() {
 		proofBytes, err := common.RetrieveTxtRecord(*domain+"."+*mapResolverDomain+".", *mapResolverAddress, true)
 		common.LogError("Failed to retrieve txt record: %s", err)
 		// add google root CA as trusted CA (0x9be20757671c1ec06a06de59b49a2ddfdc19862e)
-		// err = util.VerifyTrustflex(*domain, proofBytes, nil, *mapID, *mapPk, [][]byte{[]byte{0x9b, 0xe2, 0x07, 0x57, 0x67, 0x1c, 0x1e, 0xc0, 0x6a, 0x06, 0xde, 0x59, 0xb4, 0x9a, 0x2d, 0xdf, 0xdc, 0x19, 0x86, 0x2e}}, true)
-		err = util.VerifyTrustflex(*domain, proofBytes, nil, *mapID, *mapPk, nil, true)
+		// err = util.VerifyFpki(*domain, proofBytes, nil, *mapID, *mapPk, [][]byte{[]byte{0x9b, 0xe2, 0x07, 0x57, 0x67, 0x1c, 0x1e, 0xc0, 0x6a, 0x06, 0xde, 0x59, 0xb4, 0x9a, 0x2d, 0xdf, 0xdc, 0x19, 0x86, 0x2e}}, true)
+		err = util.VerifyFpki(*domain, proofBytes, nil, *mapID, *mapPk, nil, true)
 		common.LogError("Failed to Verify proof: %s", err)
 		common.Log("Success")
 	case "verify-all":

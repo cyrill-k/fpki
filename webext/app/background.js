@@ -34,8 +34,8 @@ const autoExperimentRun = false
 const useStaplingApproach = false
 
 const mapServers = [{
-    MapIDPath: '/home/cyrill/go/src/github.com/cyrill-k/trustflex/tls/digitalocean_vm_config/mapid1',
-    MapPKPath: '/home/cyrill/go/src/github.com/cyrill-k/trustflex/tls/digitalocean_vm_config/mappk1.pem',
+    MapIDPath: '/home/cyrill/go/src/github.com/cyrill-k/fpki/tls/digitalocean_vm_config/mapid1',
+    MapPKPath: '/home/cyrill/go/src/github.com/cyrill-k/fpki/tls/digitalocean_vm_config/mappk1.pem',
     MapResolverDomain: 'mapserver1.com'
 }]
 
@@ -73,7 +73,7 @@ async function autoPerformOneExperimentRun() {
         backgroundWindow.tabStarted = {
             '': null
         }
-        const filegenerator = browser.runtime.sendNativeMessage('ch.ethz.netsec.trustflex.filegenerator', {})
+        const filegenerator = browser.runtime.sendNativeMessage('ch.ethz.netsec.fpki.filegenerator', {})
         let rank
         let domain
         await filegenerator.then((resp) => {
@@ -120,7 +120,7 @@ async function runExperiment(urls) {
                 if (tabIsActive[tab.id]) {
                     if (new Date() - tabStarted[tab.id] > 10000) {
                         console.log(`Timeout for ${urls[i]}`)
-                        const perflogger = browser.runtime.sendNativeMessage('ch.ethz.netsec.trustflex.perflogger', {
+                        const perflogger = browser.runtime.sendNativeMessage('ch.ethz.netsec.fpki.perflogger', {
                             Id: parseInt(tabRank[tab.id]),
                             Domain: urls[i].split(',')[1],
                             TimeToHeadersReceived: 0,
@@ -253,7 +253,7 @@ async function onHeadersReceived(details) {
             const rank = parseInt(backgroundWindow.tabRank[details.tabId])
             // console.log(`rank = ${rank}`)
             if (backgroundWindow.tabIsActive[details.tabId]) {
-                const perflogger = browser.runtime.sendNativeMessage('ch.ethz.netsec.trustflex.perflogger', {
+                const perflogger = browser.runtime.sendNativeMessage('ch.ethz.netsec.fpki.perflogger', {
                     Id: rank,
                     Domain: hostname,
                     TimeToHeadersReceived: Math.round(timeToHeadersReceived),
@@ -360,7 +360,7 @@ async function onHeadersReceived(details) {
                 // console.log(`rank = ${rank}`)
                 console.log(`tab is active: ${details.tabId}, ${backgroundWindow.tabIsActive} ${backgroundWindow.tabIsActive[details.tabId]}`)
                 if (backgroundWindow.tabIsActive[details.tabId]) {
-                    const perflogger = browser.runtime.sendNativeMessage('ch.ethz.netsec.trustflex.perflogger', {
+                    const perflogger = browser.runtime.sendNativeMessage('ch.ethz.netsec.fpki.perflogger', {
                         Id: rank,
                         Domain: hostname,
                         TimeToHeadersReceived: Math.round(timeToHeadersReceived),
@@ -383,9 +383,9 @@ async function onHeadersReceived(details) {
                 }
                 resolve(retVal)
             }).catch((err) => {
-                // console.log(`error (${err}) waiting for ${isHttps} ${hostname}: failed to query trustflex dns mapserver`);
+                // console.log(`error (${err}) waiting for ${isHttps} ${hostname}: failed to query fpki dns mapserver`);
                 retVal = {
-                    redirectUrl: newCancelUrl(normalise(details.url), `Failed to query trustflex dns mapserver: ${err}`)
+                    redirectUrl: newCancelUrl(normalise(details.url), `Failed to query fpki dns mapserver: ${err}`)
                 }
                 resolve(retVal)
             })
@@ -477,7 +477,7 @@ async function onErrorOccurred(details) {
         console.log(`onErrorOccurred(${new URL(details.url).origin}): closing tab[${details.tabId}]`)
         const hostname = normalisedHostname(details.url)
         const rank = parseInt(backgroundWindow.tabRank[details.tabId])
-        const perflogger = browser.runtime.sendNativeMessage('ch.ethz.netsec.trustflex.perflogger', {
+        const perflogger = browser.runtime.sendNativeMessage('ch.ethz.netsec.fpki.perflogger', {
             Id: rank,
             Domain: hostname,
             TimeToHeadersReceived: 0,

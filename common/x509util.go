@@ -337,7 +337,7 @@ func X509Verify(cert []x509.Certificate) ([][]*x509.Certificate, error) {
 	if err != nil {
 		return nil, err
 	}
-	for _, c := range X509GetCerts("/home/cyrill/go/src/github.com/cyrill-k/trustflex/data", "ca\\d+_cert.pem") {
+	for _, c := range X509GetCerts("/home/cyrill/go/src/github.com/cyrill-k/fpki/data", "ca\\d+_cert.pem") {
 		r.AddCert(c)
 	}
 

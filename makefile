@@ -1,13 +1,13 @@
 # relevant paths
 trillian ?= $(GOPATH)/src/github.com/cyrill-k/trillian
-trustflex ?= $(GOPATH)/src/github.com/cyrill-k/trustflex
+fpki ?= $(GOPATH)/src/github.com/cyrill-k/fpki
 coredns ?= $(GOPATH)/src/github.com/cyrill-k/coredns
-webext=$(trustflex)/webext
+webext=$(fpki)/webext
 
-corednsconfig=$(trustflex)/dns/coredns
+corednsconfig=$(fpki)/dns/coredns
 
 TRILLIAN_BIN_PATH ?= $(trillian)
-TRUSTFLEX_BIN_PATH ?= $(trustflex)
+FPKI_BIN_PATH ?= $(fpki)
 COREDNS_BIN_PATH ?= $(coredns)
 
 MYSQL_HOST ?= 127.0.0.1
@@ -25,7 +25,7 @@ MAP_SERVER_HOST ?= localhost
 madmin=$(MAP_SERVER_HOST):8094
 mclient=$(MAP_SERVER_HOST):8095
 
-BASE_CMD ?= cd $(TRUSTFLEX_BIN_PATH) && ./main.go
+BASE_CMD ?= cd $(FPKI_BIN_PATH) && ./main.go
 cmd=$(BASE_CMD) --log_addr=$(ladmin) --map_addr=$(madmin) --max_receive_message_size=1073741824
 
 configdir ?= /mnt/config
@@ -49,11 +49,11 @@ lastidxpath = "$(configdir)/lastIdx"
 # Build relevant Trillian files
 build:: build_ca build_tmain build_trillian build_coredns build_webextensions
 build_ca::
-	cd $(trustflex) && \
+	cd $(fpki) && \
 	go build ca/main.go
 
 build_tmain::
-	cd $(trustflex) && \
+	cd $(fpki) && \
 	go build trillian/tmain/main.go
 
 build_trillian::
@@ -82,7 +82,7 @@ build_webextensions::
 	go build . && ./install.sh ~/.mozilla/native-messaging-hosts && \
 	cd $(webext)/policyfetcher && \
 	go build . && ./install.sh ~/.mozilla/native-messaging-hosts && \
-	cd $(trustflex) && \
+	cd $(fpki) && \
 	go build trillian/verifier/verifier.go
 
 change_netplan::
