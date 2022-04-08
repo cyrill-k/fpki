@@ -26,12 +26,6 @@ func (p *Proof) VerifyProof(root *types.MapRootV1) error {
 	return merkle.VerifyMapInclusionProof(p.MapID, p.Proof.Leaf, root.RootHash, p.Proof.Inclusion, maphasher.Default)
 }
 
-// Returned by ILSes in GetPoA
-type PoAResp struct {
-	PoA      Proof               `json:"poa"`
-	MultiSMR *MultiSignedMapRoot `json:"msmr"`
-}
-
 // PoC from Trillian Log
 type PoC struct {
 	Proof     *trillian.Proof `json:"proof"`
@@ -52,12 +46,6 @@ func (poc *PoC) VerifyProof(first, second uint64, firstHash, secondHash string) 
 
 	verifier := merkle.NewLogVerifier(rfc6962.DefaultHasher)
 	return verifier.VerifyConsistencyProof(int64(first), int64(second), prevHash, currHash, poc.Proof.Hashes)
-}
-
-// Returned by ILSes in GetPoC
-type PoCResp struct {
-	PoC      PoC                 `json:"poc"`
-	MultiSLR *MultiSignedLogRoot `json:"mslr"`
 }
 
 func MapLeafInclusionToString(p *trillian.MapLeafInclusion) string {

@@ -167,12 +167,6 @@ func KeyFromPEM(fileName string) ([]byte, error) {
 	return ret, nil
 }
 
-func ReadEECert(request *CRReq) (EECert, error) {
-	byteEECert := request.EECert
-	eecert, err := x509.ParseCertificates(byteEECert)
-	return eecert, err
-}
-
 func CertFromFile(fileName string) (*x509.Certificate, error) {
 	byteCert, err := EECertFromPEM(fileName)
 	if err != nil {
