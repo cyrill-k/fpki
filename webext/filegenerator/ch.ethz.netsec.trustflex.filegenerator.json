@@ -1,0 +1,9 @@
+{
+  "name": "ch.ethz.netsec.trustflex.filegenerator",
+  "description": "Reads domain list from file and sends domains to webbrowser one-by-one",
+  "path": "/home/cyrill/go/src/github.com/cyrill-k/trustflex/webext/filegenerator/filegenerator",
+  "type": "stdio",
+  "allowed_extensions": [
+      "trustflex@netsec.ethz.ch"
+  ]
+}

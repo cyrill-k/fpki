@@ -1,0 +1,20 @@
+. {
+  debug
+  bind 127.0.0.5
+  forward . 8.8.8.8
+  example
+}
+
+mapserver1.com {
+  bind 127.0.0.5
+  debug
+  bufsize 4096
+  mapserver /home/cyrill/go/src/github.com/cyrill-k/trustflex/trillian/mapid1 /home/cyrill/go/src/github.com/cyrill-k/trustflex/data/map_pk1.pem grpc://localhost:8094 1073741824
+}
+
+example.org {
+  bind 127.0.0.5
+  debug
+  whoami
+  example
+}

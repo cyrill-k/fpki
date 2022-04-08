@@ -1,0 +1,16 @@
+.:12345 {
+  debug
+  forward . 8.8.8.8
+  example
+}
+
+mapserver1.com:12345 {
+  debug
+  mapserver /root/go/src/github.com/cyrill-k/trustflex/trillian/mapid1 /root/go/src/github.com/cyrill-k/trustflex/data/mappk1.pem grpc://localhost:8094 1073741824
+}
+
+example.org:12345 {
+  debug
+  whoami
+  example
+}

@@ -1,0 +1,53 @@
+{
+    "name": "F-PKI Verifier",
+    "version": "1.0",
+    "manifest_version": 2,
+    "description": "F-PKI Certificate Verifier",
+
+    "permissions": [
+        "webNavigation",
+        "webRequest",
+        "webRequestBlocking",
+        "tabs",
+        "activeTab",
+        "<all_urls>",
+        "cookies",
+        "storage",
+        "nativeMessaging",
+        "dns",
+        "downloads"
+    ],
+
+    "browser_specific_settings": {
+        "gecko": {
+            "id": "trustflex@netsec.ethz.ch",
+            "strict_min_version": "50.0"
+        }
+    },
+
+    "background": {
+        "scripts": ["background.js"],
+        "persistent": true
+    },
+
+    "browser_action": {
+        "default_popup": "popup/pop.html",
+        "default_icon": {
+            "32":  "images/favicon-32.png",
+            "96":  "images/favicon-96.png",
+            "128": "images/favicon-128.png",
+            "196": "images/favicon-196.png"
+        }
+    },
+    "icons": {
+        "32":  "images/favicon-32.png",
+        "96":  "images/favicon-96.png",
+        "128": "images/favicon-128.png",
+        "196": "images/favicon-196.png"
+    },
+
+    "web_accessible_resources": [
+        "/pages/blocked.html",
+        "/pages/waiting.html"
+    ]
+}
