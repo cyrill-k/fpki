@@ -7,7 +7,6 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/asn1"
-	"encoding/json"
 	"encoding/pem"
 	"errors"
 	"fmt"
@@ -17,35 +16,18 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"strconv"
 	"strings"
 	// "github.com/google/trillian/merkle/maphasher"
 )
 
-// EECert extensions
+// cert extensions
 var (
-	OIDExtensionCALST      = asn1.ObjectIdentifier{1, 3, 500, 1}
-	OIDExtensionILSLST     = asn1.ObjectIdentifier{1, 3, 500, 2}
-	OIDExtensionCAMIN      = asn1.ObjectIdentifier{1, 3, 500, 3}
-	OIDExtensionILSTO      = asn1.ObjectIdentifier{1, 3, 500, 4}
-	OIDExtensionCATH       = asn1.ObjectIdentifier{1, 3, 500, 5}
-	OIDExtensionCOPUNLKD   = asn1.ObjectIdentifier{1, 3, 500, 6}
-	OIDExtensionCOPUNTRSTD = asn1.ObjectIdentifier{1, 3, 500, 7}
-
 	OIDExtensionUNIQUE = asn1.ObjectIdentifier{1, 3, 500, 8}
 )
 
 type X509BoolExtension struct {
 	Inherited bool
 	Value     bool
-}
-
-type JsonCAListExt struct {
-	CAList []string `json:"ca_list"`
-}
-
-type JsonILSListExt struct {
-	ILSList []string `json:"ils_list"`
 }
 
 func ResolvePolicy(domain string, certificates [][]x509.Certificate) (map[string]interface{}, error) {
@@ -383,114 +365,4 @@ func X509GetCerts(certFolder, regex string) []*x509.Certificate {
 		return nil
 	})
 	return certs
-}
-
-// Used by both CAs and ILS during Certificate Update
-func VerifyUpdateRequirements(old, new []*x509.Certificate, firstILS, firstCA, secondCA string) error {
-	log.Println("Verifying update requirements")
-
-	var newCas JsonCAListExt
-	var newIls JsonILSListExt
-	var newMin int
-	var err error
-	for _, cert := range new {
-		newExts := cert.Extensions
-
-		for _, ext := range newExts {
-			if ext.Id.Equal(OIDExtensionCALST) {
-				err := json.Unmarshal(ext.Value, &newCas.CAList)
-
-				if err != nil {
-					return fmt.Errorf("failed to unmarshal CA list extension: %s", err)
-				}
-
-				if !SliceIncludes(newCas.CAList, firstCA) || !SliceIncludes(newCas.CAList, firstCA) {
-					return errors.New("involved CAs are not in CA_LIST")
-				}
-
-			} else if ext.Id.Equal(OIDExtensionILSLST) {
-				err := json.Unmarshal(ext.Value, &newIls.ILSList)
-
-				if err != nil {
-					return fmt.Errorf("failed to unmarshal ILS list extension: %s", err)
-				}
-
-				if !SliceIncludes(newIls.ILSList, firstILS) {
-					return fmt.Errorf("involved ILS is not in ILS_LIST: %s", firstILS)
-				}
-
-			} else if ext.Id.Equal(OIDExtensionCAMIN) {
-				newMin, err = strconv.Atoi(string(ext.Value))
-
-				if err != nil {
-					return fmt.Errorf("failed to convert CA_MIN extension: %s", err)
-				}
-
-				if len(new) < newMin {
-					return fmt.Errorf("EECert should have at least %d certificates, but only has %d", newMin, len(new))
-				}
-			}
-		}
-
-	}
-	var oldCas JsonCAListExt
-	var oldIls JsonILSListExt
-	var oldMin int
-	var oldCOP, oldCOPLKD int64
-	for _, cert := range old {
-		oldExts := cert.Extensions
-
-		for _, ext := range oldExts {
-			if ext.Id.Equal(OIDExtensionCALST) {
-				err := json.Unmarshal(ext.Value, &oldCas.CAList)
-
-				if err != nil {
-					return fmt.Errorf("failed to unmarshal CA list extension: %s", err)
-				}
-			} else if ext.Id.Equal(OIDExtensionILSLST) {
-				err := json.Unmarshal(ext.Value, &oldIls.ILSList)
-
-				if err != nil {
-					return fmt.Errorf("failed to unmarshal ILS list extension: %s", err)
-				}
-
-			} else if ext.Id.Equal(OIDExtensionCAMIN) {
-				oldMin, err = strconv.Atoi(string(ext.Value))
-
-				if err != nil {
-					return fmt.Errorf("failed to convert CA_MIN extension: %s", err)
-				}
-			} else if ext.Id.Equal(OIDExtensionCOPUNTRSTD) {
-				oldCOP, err = strconv.ParseInt(string(ext.Value), 10, 64)
-
-				if err != nil {
-					return fmt.Errorf("failed to convert COP_UNTRUSTED extension: %s", err)
-				}
-			} else if ext.Id.Equal(OIDExtensionCOPUNLKD) {
-				oldCOPLKD, err = strconv.ParseInt(string(ext.Value), 10, 64)
-
-				if err != nil {
-					return fmt.Errorf("failed to convert COP_UNLINKED extension: %s", err)
-				}
-			}
-		}
-	}
-
-	if !SliceIncludes(oldIls.ILSList, firstILS) || !SliceIncludes(oldCas.CAList, firstCA) ||
-		!SliceIncludes(oldCas.CAList, secondCA) {
-		return fmt.Errorf("untrusted entities with respect to old EECert, cool-off period set to %d", oldCOP)
-	}
-
-	if len(new) < oldMin {
-		return fmt.Errorf("new EECert should have at least %d (old CA_MIN) certificates, but only has %d", oldMin, len(new))
-	}
-
-	signedByOld := new[len(new)-1] // last certificate of new EECert is the one signed by the old private key
-	// public keys are the same, so take old[0]
-	err = signedByOld.CheckSignatureFrom(old[0])
-	if err != nil {
-		return fmt.Errorf("failed to verify old EECert signature over new one, cool-off period set to %d: %s", oldCOPLKD, err)
-	}
-
-	return nil
 }
